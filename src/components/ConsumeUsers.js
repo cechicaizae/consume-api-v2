@@ -1,25 +1,42 @@
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+
 const ConsumeUsers = () => {
-  //setear hooks useState
   const [users, setUsers] = useState([]);
-  //funcion traer api
+
+  //Implement Debounce
+  const [search, setSearch] = useState(""); //Search
+  const [debouncedSearch, setDebouncedSearch] = useState(""); // Status search debounce
+
   const URL = "https://jsonplaceholder.typicode.com/users";
-  //traer datos
-  const showData = async () => {
-    const response = await fetch(URL);
+
+  const showData = async (term) => {
+    const response = await fetch(`${URL}?q=${term}`);
     const data = await response.json();
-    console.log(data);
     setUsers(data);
   };
 
   useEffect(() => {
-    showData([]);
-  });
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 5000); // Response time
 
-  //renderizamos la vista
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [search]);
+
+  useEffect(() => {
+    showData(debouncedSearch);
+  }, [debouncedSearch]);
+
   return (
     <div>
+      <input
+        type="text"
+        placeholder="Enter a name:"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
       <table align="center">
         <thead>
           <tr>
@@ -28,7 +45,6 @@ const ConsumeUsers = () => {
             <th>Website</th>
           </tr>
         </thead>
-
         <tbody>
           {users.map((user) => (
             <tr key={user.id}>
